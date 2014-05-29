@@ -200,13 +200,64 @@ hash["key2"] = "value2"
 	end
 
 	context 'rehash' do
-		xit 'fixes broken links - if keys have changed since being matched, it attempts to re-pair them. Beware - strings and arrays behave differently' do
-			earthman = "Ford"
+		it 'fixes broken links - if keys have changed since being matched, it attempts to re-pair them. Beware - strings and arrays behave differently' do
+			earthman = ["Ford"]
 			gash = {earthman => "harmless"}
-			earthman.replace "Arthur"
+			earthman[0] = "Arthur"
 			expect(gash[earthman]).to eq nil
 			gash.rehash
 			expect(gash[earthman]).to eq "harmless"
+		end
+	end
+
+	context 'reject! {|key, value|}' do
+		it 'returns a new hash consisting of elements which returned false. Has perm version (similar to .delete_if)' do
+			expect(hash.reject {|key, value| key.is_a?(Comparable) && value.is_a?(String)}).to eq({[:key3] => "mockingbird"})
+		end
+	end
+
+	context 'select! {key, value|}' do
+		it 'the opposite of above - returns a hash of pairs which returned true. Perm vers is similar to keep_if' do
+			expect(hash.select{|key, value| key.is_a?(String) && value.is_a?(String)}). to eq({"key2" => "value2"})
+		end 
+	end
+
+	context 'shift' do
+		it 'it (unreliably removes the first?) pair of the hash and returns it as a new array' do
+			expect(hash.shift).to eq([:key, "shoes"])
+			expect(hash).to eq({"key2" => "value2", [:key3] => "mockingbird"})
+		end
+	end
+
+	context 'size' do
+		it 'same as length - gives no of pairs' do
+			expect(hash.size).to eq 2
+		end
+	end
+
+	context 'store(key, value)' do
+		it 'is the(?) other way to add pairs to a hash' do
+			expect(hash.store(:unknown, 42)).to eq 42
+			expect(hash).to eq({unknown: 42, "key2" => "value2", [:key3] => "mockingbird"})
+		end
+	end
+
+	context 'update' do
+		it 'is the same as .merge' do
+			jash = {zz9pluralzalpha: :Earth}
+			expect(hash.merge(jash)).to eq({unknown: 42, "key2" => "value2", zz9pluralzalpha: :Earth, [:key3] => "mockingbird"})
+		end
+	end
+
+	context 'value?' do
+		it 'returns true if the hash contains the value in arg' do
+			expect(hash).not_to have_value("popinjay")
+		end
+	end
+
+	context 'values_at' do
+		it 'returns an array of the values associated with each of the keys given as args' do
+			expect(hash.values_at(:unknown, [:key3])).to eq([42, "mockingbird"])
 		end
 	end
 
